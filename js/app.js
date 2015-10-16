@@ -100,7 +100,9 @@ var app = new Vue({
 
 window.onresize = fitDisplay;
 window.onbeforeunload = function () {
-  return '目前抽奖尚未结束，是否要离开？';
+  if (app.isSetup) {
+    return '目前抽奖尚未结束，是否要离开？';
+  }
 };
 
 function swap(items, i, j) {
