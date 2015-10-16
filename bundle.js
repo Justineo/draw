@@ -98,6 +98,11 @@
 	  },
 	  methods: {
 	    setup: function () {
+	      if (this.$els.total.validationMessage) {
+	        alert(this.$els.total.validationMessage);
+	        return;
+	      }
+
 	      this.candidates = Array(this.total).fill(true).map(function (item, i) {
 	        return pad(i + 1, 3);
 	      });
@@ -128,6 +133,11 @@
 	      e.target.setCustomValidity(validity);
 	    },
 	    draw: function (e) {
+	      if (this.$els.round.validationMessage) {
+	        alert(this.$els.round.validationMessage);
+	        return;
+	      }
+
 	      if (!this.isRolling) {
 	        this.startRoll();
 
