@@ -1,0 +1,17 @@
+{
+  "name": "draw",
+  "version": "1.0.0",
+  "description": "Lucky draw for SSG.",
+  "main": "bundle.js",
+  "devDependencies": {
+    "css-loader": "^0.19.0",
+    "style-loader": "^0.12.4",
+    "webpack": "^1.12.2"
+  },
+  "repository": "https://github.com/Justineo/draw.git",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Justineo",
+  "license": "MIT"
+}

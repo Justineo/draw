@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JS Bin</title>
+<link href='http://fonts.useso.com/css?family=Schoolbell' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<div id="display"><h1 v-html="display" v-bind:class="displayType"></h1></div>
+<div id="control">
+    <form v-on:submit.prevent="setup">
+        <p><label>总人数：<input type="number" required min="1" max="999" v-model="total" number v-bind:disabled="isSetup"></label><button v-bind:disabled="isSetup">确定</button></p>
+    </form>
+    <form v-on:reset="reset" v-on:submit.prevent="draw">
+        <p><label>本轮抽：<input type="number" v-model="round" number required v-bind:disabled="!this.isSetup || this.isRolling" required min="1" max="50" v-on:input="checkRemaining" v-el:round></label><button v-bind:disabled="!isSetup" name="begin" v-text="isRolling ? '停止' : '开始'" v-el:begin></button></p>
+        <p>剩余人数：<span v-text="remaining"></span> <button type="reset" v-bind:disabled="!isSetup">重置</button></p>
+    </form>
+</div>
+<script src="bundle.js"></script>
+</body>
+</html>
