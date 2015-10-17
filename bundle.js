@@ -80,8 +80,8 @@
 	  data: {
 	    display: placeholder,
 	    candidates: [],
-	    total: 10,
-	    round: 1,
+	    total: null,
+	    round: null,
 	    isSetup: false,
 	    isRolling: false,
 	    displayType: 'welcome'
@@ -115,6 +115,7 @@
 	    reset: function () {
 	      this.stopRoll();
 	      this.total = null;
+	      this.round = null;
 	      this.isSetup = false;
 	      this.show(placeholder, 'welcome');
 	      fitDisplay();
@@ -147,11 +148,8 @@
 	        });
 	      } else { // 'end'
 	        this.stopRoll();
-	        this.shuffle();
 	        var winners = this.candidates.splice(0, this.round);
-	        this.show(winners.map(function (winner) {
-	           return '<span class="name">' + winner + '</span>';
-	        }).join(''), 'result');
+	        this.show(getResultHTML(winners));
 	        this.checkRemaining({
 	          target: this.$els.round
 	        });
@@ -164,8 +162,9 @@
 	      this.stopRoll();
 	      var me = this;
 	      rollTimer = setInterval(function () {
-	        var name = me.candidates[Math.floor(Math.random() * me.candidates.length)];
-	        me.show('<span class="name">' + name + '</span>', 'rolling');
+	        me.shuffle();
+	        var winners = me.candidates.slice(0, me.round);
+	        me.show(getResultHTML(winners));
 	      }, 1000 / 15);
 	      this.isRolling = true;
 	    },
@@ -225,6 +224,12 @@
 	      }
 	    }
 	  });
+	}
+
+	function getResultHTML(winners) {
+	  return winners.map(function (winner) {
+	     return '<span class="name">' + winner + '</span>';
+	  }).join('');
 	}
 
 	})();
