@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('../css/app.css');
+
 var placeholder = 'Who\'s feeling lucky?';
 var rollTimer;
 var msgTimer;
