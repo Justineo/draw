@@ -6,7 +6,7 @@
 
 html {
   min-height: 720px;
-  background: url(http://dev-10013905.file.myqcloud.com/draw.jpg) #4db1d3 no-repeat top center;
+  background: #4db1d3;
 }
 
 body {
@@ -19,6 +19,10 @@ body {
 
 p {
   margin: 0.75em 0;
+}
+
+p * {
+  vertical-align: middle;
 }
 
 button,
@@ -71,7 +75,7 @@ h1.welcome {
 
 .name {
   display: inline-block;
-  width: 3em;
+  width: 3.5em;
   margin: 3px;
   background-color: rgba(0, 0, 0, .2);
   color: #fff;
@@ -82,18 +86,27 @@ h1.welcome {
 
 button,
 input[type="number"] {
-  margin: 5px;
+  margin: 0 5px;
   border: 3px solid rgba(255, 255, 255, .2);
   background: rgba(255, 255, 255, .2);
   padding: 0 20px;
   line-height: 2;
   border-radius: 6px;
+  color: inherit;
 }
 
 button:focus,
 input[type="number"]:focus {
   outline: none;
   border-color: rgba(255, 255, 255, .8);
+}
+
+input[type="file"] {
+  cursor: pointer;
+}
+
+input[type="file"]:focus {
+  outline: none;
 }
 
 button:not([disabled]):hover,
@@ -106,7 +119,8 @@ input[type="number"]:active {
   border-color: #fff;
 }
 
-input[type="number"] {
+input[type="number"],
+input[type="file"] {
   width: 120px;
   box-shadow: none;
 }
@@ -124,4 +138,33 @@ button {
 
 [v-show] {
   display: none;
+}
+
+input[type="file"] {
+  margin: 0 5px;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+  margin: 0;
+  width: 120px;
+  border: 4px solid rgba(255, 255, 255, .5);
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  padding: 0 20px;
+  line-height: 2;
+  border-radius: 6px;
+  color: inherit;
+}
+
+input[type="file"]::-webkit-file-upload-button:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, .8);
+}
+
+input[type="file"]:not([disabled]):hover::-webkit-file-upload-button {
+  border-color: rgba(255, 255, 255, .8);
+}
+
+input[type="file"]::-webkit-file-upload-button:active {
+  border-color: #fff;
 }

@@ -57,25 +57,27 @@
 
 	__webpack_require__(2);
 
-	var placeholder = 'Who\'s feeling lucky?';
-	var rollTimer;
-	var msgTimer;
+	let rollTimer;
+	let msgTimer;
 
-	var Vue = __webpack_require__(6);
-	var app = new Vue({
+	let Vue = __webpack_require__(6);
+	let app = new Vue({
 	  el: 'body',
 	  data: {
-	    display: placeholder,
 	    candidates: [],
+	    winners: [],
 	    total: null,
 	    round: null,
-	    isSetup: false,
-	    isRolling: false,
-	    displayType: 'welcome'
+	    isRolling: false
 	  },
 	  computed: {
+	    isSetup: {
+	      get() {
+	        return this.candidates.length > 0;
+	      }
+	    },
 	    remaining: {
-	      get: function () {
+	      get() {
 	        if (!this.isSetup) {
 	          return '∞';
 	        }
@@ -84,43 +86,54 @@
 	    }
 	  },
 	  methods: {
-	    setup: function () {
+	    setup() {
 	      if (this.$els.total.validationMessage) {
 	        alert(this.$els.total.validationMessage);
 	        return;
 	      }
 
-	      this.candidates = Array(this.total).fill(true).map(function (item, i) {
-	        return pad(i + 1, 3);
-	      });
-	      this.isSetup = true;
-	      var round = this.$els.round;
-	      this.$nextTick(function () {
+	      this.candidates = Array(this.total).fill(true).map((item, i) => pad(i + 1, 3));
+	      let round = this.$els.round;
+	      this.$nextTick(() => {
 	        round.focus();
 	      });
 	    },
-	    reset: function () {
+	    upload({target}) {
+	      let file = target.files[0];
+	      if (!file) {
+	        return;
+	      }
+	      let reader = new FileReader();
+	      reader.onload = ({target}) => {
+	        this.candidates = target.result
+	          .split('\n')
+	          .map(line => line.trim())
+	          .filter(line => line);
+	        this.total = this.candidates.length;
+	        console.log(this.candidates.length);
+	        let round = this.$els.round;
+	        this.$nextTick(() => {
+	          round.focus();
+	        });
+	      };
+	      reader.readAsText(file);
+	    },
+	    reset() {
 	      this.stopRoll();
 	      this.total = null;
 	      this.round = null;
-	      this.isSetup = false;
-	      this.show(placeholder, 'welcome');
-	      fitDisplay();
+	      this.candidates = [];
+	      this.winners = [];
+	      this.$els.upload.value = '';
 	    },
-	    show: function (content, type) {
-	      this.displayType = type || 'normal';
-	      this.display = content;
-
-	      fitDisplay();
-	    },
-	    checkRemaining: function (e) {
-	      var validity = ''
+	    checkRemaining({target}) {
+	      let validity = ''
 	      if (this.candidates.length < this.round) {
 	        validity = '剩余人数不足' + this.round + '人。';
 	      }
-	      e.target.setCustomValidity(validity);
+	      target.setCustomValidity(validity);
 	    },
-	    draw: function (e) {
+	    draw() {
 	      if (this.$els.round.validationMessage) {
 	        alert(this.$els.round.validationMessage);
 	        return;
@@ -129,29 +142,26 @@
 	      if (!this.isRolling) {
 	        this.startRoll();
 
-	        var begin = this.$els.begin;
-	        this.$nextTick(function () {
+	        let begin = this.$els.begin;
+	        this.$nextTick(() => {
 	          begin.focus();
 	        });
 	      } else { // 'end'
 	        this.stopRoll();
-	        var winners = this.candidates.splice(0, this.round);
-	        this.show(getResultHTML(winners));
+	        this.winners = this.candidates.splice(0, this.round);
 	        this.checkRemaining({
 	          target: this.$els.round
 	        });
 	      }
 	    },
-	    shuffle: function () {
+	    shuffle() {
 	      shuffle(this.candidates);
 	    },
-	    startRoll: function () {
+	    startRoll() {
 	      this.stopRoll();
-	      var me = this;
-	      rollTimer = setInterval(function () {
-	        me.shuffle();
-	        var winners = me.candidates.slice(0, me.round);
-	        me.show(getResultHTML(winners));
+	      rollTimer = setInterval(() => {
+	        this.shuffle();
+	        this.winners = this.candidates.slice(0, this.round);
 	      }, 1000 / 15);
 	      this.isRolling = true;
 	    },
@@ -159,31 +169,38 @@
 	      clearTimeout(rollTimer);
 	      this.isRolling = false;
 	    }
+	  },
+	  watch: {
+	    winners(val, oldVal) {
+	      if (val == null || oldVal == null || val.length !== oldVal.length) {
+	        fitDisplay();
+	      }
+	    }
 	  }
 	});
 
 	window.onresize = fitDisplay;
-	window.onbeforeunload = function () {
+	window.onbeforeunload = () => {
 	  if (app.isSetup) {
 	    return '目前抽奖尚未结束，是否要离开？';
 	  }
 	};
 
 	function swap(items, i, j) {
-	  var k = items[i];
+	  let k = items[i];
 	  items[i] = items[j];
 	  items[j] = k;
 	}
 
 	function shuffle(items) {
-	  for (var i = items.length - 1; i > 0; i--) {
-	    var j = Math.floor(Math.random() * (i + 1));
+	  for (let i = items.length - 1; i > 0; i--) {
+	    let j = Math.floor(Math.random() * (i + 1));
 	    swap(items, i, j);
 	  }
 	}
 
 	function pad(number, digits) {
-	  var numDigits = Math.floor(Math.log10(number)) + 1;
+	  let numDigits = Math.floor(Math.log10(number)) + 1;
 	  if (numDigits >= digits) {
 	    return '' + number;
 	  }
@@ -191,21 +208,22 @@
 	}
 
 	function fitDisplay() {
-	  Vue.nextTick(function () {
-	    var display = document.getElementById('display');
-	    display.firstChild.style.fontSize = '';
+	  Vue.nextTick(() => {
+	    let display = document.getElementById('display');
+	    let content = display.querySelector('h1');
+	    content.style.fontSize = '';
 
-	    var computed;
+	    let computed;
 	    while (true) {
-	      var outerHeight = display.offsetHeight;
-	      var innerHeight = display.firstChild.offsetHeight;
+	      let outerHeight = display.offsetHeight;
+	      let innerHeight = content.offsetHeight;
 	      if (innerHeight > outerHeight) {
 	        // 二分法明显快些，偷懒了……
-	        computed = parseInt(window.getComputedStyle(display.firstChild).fontSize, 10);
+	        computed = parseInt(window.getComputedStyle(content).fontSize, 10);
 	        if (computed === 12) {
 	          break;
 	        }
-	        display.firstChild.style.fontSize = (computed - 2) + 'px';
+	        content.style.fontSize = (computed - 2) + 'px';
 	      } else {
 	        break;
 	      }
@@ -214,7 +232,7 @@
 	}
 
 	function getResultHTML(winners) {
-	  return winners.map(function (winner) {
+	  return winners.map(winner => {
 	     return '<span class="name">' + winner + '</span>';
 	  }).join('');
 	}
@@ -257,7 +275,7 @@
 
 
 	// module
-	exports.push([module.id, "*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}\n\nhtml {\n  min-height: 720px;\n  background: url(http://dev-10013905.file.myqcloud.com/draw.jpg) #4db1d3 no-repeat top center;\n}\n\nbody {\n  position: relative;\n  margin: 0;\n  font-size: 16px;\n  font-family: Schoolbell, \"Comic Sans\", sans-serif;\n  color: #fff;\n}\n\np {\n  margin: 0.75em 0;\n}\n\nbutton,\ninput {\n  font-family: inherit;\n  font-size: inherit;\n  color: inherit;\n  vertical-align: middle;\n}\n\nbutton::-moz-focus-inner,\ninput::-moz-focus-inner {\n  border: 0;\n  padding: 0;\n}\n\n#display,\n#control {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n}\n\n#display {\n  position: relative;\n  height: 230px;\n  overflow: hidden;\n  top: 200px;\n}\n\nh1 {\n  display: inline-block;\n  margin: 0;\n  max-width: 640px;\n  font-size: 108px;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n}\n\nh1.welcome {\n  font-size: 48px;\n}\n\n#control {\n  top: 440px;\n}\n\n.name {\n  display: inline-block;\n  width: 3em;\n  margin: 3px;\n  background-color: rgba(0, 0, 0, .2);\n  color: #fff;\n  border-radius: 5px;\n  padding: 0.1em;\n  text-align: center;\n}\n\nbutton,\ninput[type=\"number\"] {\n  margin: 5px;\n  border: 3px solid rgba(255, 255, 255, .2);\n  background: rgba(255, 255, 255, .2);\n  padding: 0 20px;\n  line-height: 2;\n  border-radius: 6px;\n}\n\nbutton:focus,\ninput[type=\"number\"]:focus {\n  outline: none;\n  border-color: rgba(255, 255, 255, .8);\n}\n\nbutton:not([disabled]):hover,\ninput[type=\"number\"]:not([disabled]):hover {\n  border-color: rgba(255, 255, 255, .8);\n}\n\nbutton:active,\ninput[type=\"number\"]:active {\n  border-color: #fff;\n}\n\ninput[type=\"number\"] {\n  width: 120px;\n  box-shadow: none;\n}\n\nbutton {\n  border: 4px solid rgba(255, 255, 255, .5);\n  background: rgba(0, 0, 0, 0.4);\n  cursor: pointer;\n}\n\n[disabled] {\n  opacity: .5;\n  cursor: not-allowed;\n}\n\n[v-show] {\n  display: none;\n}\n", ""]);
+	exports.push([module.id, "*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}\n\nhtml {\n  min-height: 720px;\n  background: #4db1d3;\n}\n\nbody {\n  position: relative;\n  margin: 0;\n  font-size: 16px;\n  font-family: Schoolbell, \"Comic Sans\", sans-serif;\n  color: #fff;\n}\n\np {\n  margin: 0.75em 0;\n}\n\np * {\n  vertical-align: middle;\n}\n\nbutton,\ninput {\n  font-family: inherit;\n  font-size: inherit;\n  color: inherit;\n  vertical-align: middle;\n}\n\nbutton::-moz-focus-inner,\ninput::-moz-focus-inner {\n  border: 0;\n  padding: 0;\n}\n\n#display,\n#control {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n}\n\n#display {\n  position: relative;\n  height: 230px;\n  overflow: hidden;\n  top: 200px;\n}\n\nh1 {\n  display: inline-block;\n  margin: 0;\n  max-width: 640px;\n  font-size: 108px;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n}\n\nh1.welcome {\n  font-size: 48px;\n}\n\n#control {\n  top: 440px;\n}\n\n.name {\n  display: inline-block;\n  width: 3.5em;\n  margin: 3px;\n  background-color: rgba(0, 0, 0, .2);\n  color: #fff;\n  border-radius: 5px;\n  padding: 0.1em;\n  text-align: center;\n}\n\nbutton,\ninput[type=\"number\"] {\n  margin: 0 5px;\n  border: 3px solid rgba(255, 255, 255, .2);\n  background: rgba(255, 255, 255, .2);\n  padding: 0 20px;\n  line-height: 2;\n  border-radius: 6px;\n  color: inherit;\n}\n\nbutton:focus,\ninput[type=\"number\"]:focus {\n  outline: none;\n  border-color: rgba(255, 255, 255, .8);\n}\n\ninput[type=\"file\"] {\n  cursor: pointer;\n}\n\ninput[type=\"file\"]:focus {\n  outline: none;\n}\n\nbutton:not([disabled]):hover,\ninput[type=\"number\"]:not([disabled]):hover {\n  border-color: rgba(255, 255, 255, .8);\n}\n\nbutton:active,\ninput[type=\"number\"]:active {\n  border-color: #fff;\n}\n\ninput[type=\"number\"],\ninput[type=\"file\"] {\n  width: 120px;\n  box-shadow: none;\n}\n\nbutton {\n  border: 4px solid rgba(255, 255, 255, .5);\n  background: rgba(0, 0, 0, 0.4);\n  cursor: pointer;\n}\n\n[disabled] {\n  opacity: .5;\n  cursor: not-allowed;\n}\n\n[v-show] {\n  display: none;\n}\n\ninput[type=\"file\"] {\n  margin: 0 5px;\n}\n\ninput[type=\"file\"]::-webkit-file-upload-button {\n  margin: 0;\n  width: 120px;\n  border: 4px solid rgba(255, 255, 255, .5);\n  background: rgba(0, 0, 0, 0.4);\n  cursor: pointer;\n  padding: 0 20px;\n  line-height: 2;\n  border-radius: 6px;\n  color: inherit;\n}\n\ninput[type=\"file\"]::-webkit-file-upload-button:focus {\n  outline: none;\n  border-color: rgba(255, 255, 255, .8);\n}\n\ninput[type=\"file\"]:not([disabled]):hover::-webkit-file-upload-button {\n  border-color: rgba(255, 255, 255, .8);\n}\n\ninput[type=\"file\"]::-webkit-file-upload-button:active {\n  border-color: #fff;\n}\n", ""]);
 
 	// exports
 
