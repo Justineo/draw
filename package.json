@@ -4,7 +4,7 @@
   "description": "Lucky draw for SSG.",
   "main": "bundle.js",
   "devDependencies": {
-    "css-loader": "^0.19.0",
+    "css-loader": "^7.0.0",
     "style-loader": "^0.12.4",
     "webpack": "^1.12.2"
   },
